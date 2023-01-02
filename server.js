@@ -21,85 +21,22 @@ const db = mysql.createConnection(
 
 //Program functions
 const viewEmployees = () => {
-    return inquirer.prompt([
-          { type: 'input',
-            name: 'name',
-            message: "What is the team intern's name?",
-            validate: mname => {
-              if (mname) {
-                return true;
-              }else{
-                console.log('Please enter a name');
-                return false;
-              }
-            }
-         },
-              
-          {
-            type: 'input',
-            name: 'id',
-            message:"What is the team intern's ID?" ,
-            validate: id => {
-             // (isNaN(parseInt(
-              if (!isNaN(id) === true ) {
-                return true;
-              }else {
-                console.log('Please enter a valid employee ID');
-                return false;
-              }
-            }
-         },
-               
-          {
-            type: 'input',
-            name: 'email',
-            message:"What is the team intern's email?" ,
-            validate: email =>{
-              if (emailValidator.validate((email))) {
-                return true;
-              }else{
-                console.log('Please enter a valid email');
-                return false;
-              }
-            },
-    
-          },
-        
-          {
-            type: 'input',
-            name: 'school',
-            message:"What is the team intern's school?" ,
-          },
-        
-        ])
-          .then((int)=>{
-            //   console.log(response);
-          const intern = new Intern(int.name, int.id,int.email, int.school);
-          const internCard = (`<card class="card col-sm-12 col-md-3 col-lg-3 flex justify-content-center">
-          <div class="cardHeader text-center">
-              <!-- Name and role -->
-              <h2 class="cardName">${intern.name}</h2>
-              <h5 class="cardRole text-white bg-warning">${intern.getRole()}</h5>
-          </div>
-          <div class="cardBody text-center">
-              <ul class="list-group">
-              <!-- Id, Email, OfficeNumber/GitHub/School-->
-                  <li class="list-group-item">ID: ${intern.id}</li>
-                  <li class="list-group-item">Email: <a href="mailto:${intern.getEmail()}" title="mailto:${intern.getEmail()}"> ${intern.getEmail()} </a> </li>
-                  <li class="list-group-item">School: ${intern.school}</li>
-              </ul>
-          </div>
-      </card>`)
-          teamMembers.push(internCard);
-  
-         // validate info collect and store
-          // console.log(teamMembers)
-  
-  
-          teamMembersBuild();
-  
-             
-            });
+  const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
+               CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName, IFNULL(m.manager,'') Manager
+               FROM role r, 
+                    department d,
+                    employee e
+               LEFT JOIN (SELECT concat( first_name,', ',last_name) Manager , id 
+                          FROM employee) m
+               ON e.manager_id = m.id
+               WHERE r.department_id = d.id
+               AND e.role_id = r.id
+               ORDER BY e.last_name, salary`;
+  db.query(sql,(err,rows) =>{
+    if(err) console.log(err)
+    console.table(rows);
+    startApp();
+  })
   
   };
   
@@ -269,6 +206,7 @@ const startApp = () =>{
         default:
           //  quit();
            console.log('Bye Bye!!')
+
            break;
         };
      })
