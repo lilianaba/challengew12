@@ -39,6 +39,46 @@ const viewEmployees = () => {
   })
   
   };
+
+const viewEmployeesByManager = () => {
+    const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
+                 CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName, IFNULL(m.manager,'') Manager
+                 FROM role r, 
+                      department d,
+                      employee e
+                 LEFT JOIN (SELECT concat( first_name,', ',last_name) Manager , id 
+                            FROM employee) m
+                 ON e.manager_id = m.id
+                 WHERE r.department_id = d.id
+                 AND e.role_id = r.id
+                 ORDER BY e.last_name, salary`;
+    db.query(sql,(err,rows) =>{
+      if(err) console.log(err)
+      console.table(rows);
+      startApp();
+    })
+    
+    };
+
+const viewEmployeesByDepartment = () => {
+  const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
+                CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName, IFNULL(m.manager,'') Manager
+                FROM role r, 
+                    department d,
+                    employee e
+                LEFT JOIN (SELECT concat( first_name,', ',last_name) Manager , id 
+                          FROM employee) m
+                ON e.manager_id = m.id
+                WHERE r.department_id = d.id
+                AND e.role_id = r.id
+                ORDER BY e.last_name, salary`;
+  db.query(sql,(err,rows) =>{
+    if(err) console.log(err)
+    console.table(rows);
+    startApp();
+  })
+  
+  };
   
 const addEmployee = () => {
     return inquirer.prompt([
@@ -127,6 +167,10 @@ const updateEmployeeRole = () => {
 
 };
 
+const updateEmployeeManager = () => {
+
+};
+
 const viewRoles = () => {
   const sql =  `select r.id ID,r.title Title, CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName
                   from role r, department d
@@ -152,12 +196,15 @@ const viewDepartments = () => {
   })
 };
 
-function exit () {
-  inquirer.close();
-}
-
-
-
+const budgetByDepartment = () => {
+  const sql =  `select d.id ID,d.name DeptName
+                  from department d`;
+  db.query(sql,(err,rows) => {
+    if(err) console.log(err)
+    console.table(rows);
+  startApp();
+  })
+};
 
 
 
@@ -168,13 +215,17 @@ const startApp = () =>{
          type: 'list',
          name: 'start',
          message:"What would you like to do?" ,
-         choices:['View all employees',
+         choices:['View all employees*',
+                  'View employees by Manager',
+                  'View employees by Department',
                   'Add employee',
                   'Update employee role',
-                  'View all roles',
+                  'Update employee manager',
+                  'View all roles*',
                   'Add new role',
-                  'View all departments',
+                  'View all departments*',
                   'Add new department',
+                  'View total budget by department',
                   'Quit']
        },      
      ])
@@ -183,6 +234,14 @@ const startApp = () =>{
         case "View all employees":
             viewEmployees();
             break;
+
+        case "View employees by Manager":
+            viewEmployeesByManager();
+            break;
+
+        case "View employees by Department":
+          viewEmployeesByDepartment();
+          break;
  
         case "Add employee":
            addEmployee();
@@ -190,6 +249,10 @@ const startApp = () =>{
         
         case "Update employee role":
            updateEmployeeRole();
+           break;
+
+        case "Update employee manager":
+           updateEmployeeManager();
            break;
 
         case "View all roles":
@@ -207,15 +270,21 @@ const startApp = () =>{
         case "Add new department":
            addDepartment();
            break;
+
+        case "View total budget by department":
+           budgetByDepartment();
+           break;
         
         default:
-          //  quit();
-           console.log('Bye Bye!!')
-           exit();
-           break;
+          console.log('Bye Bye!!')
+          process.exit();
         };
      })
  };
 
  startApp();
  
+
+
+// Delete departments, roles, and employees.
+
