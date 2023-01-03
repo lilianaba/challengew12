@@ -137,17 +137,25 @@ const viewRoles = () => {
   startApp();
   })
 };
-const viewEmployee = () => {
-
-};
 
 const addRole = () => {
 
 };
 
 const viewDepartments = () => {
-
+  const sql =  `select d.id ID,d.name DeptName
+                  from department d`;
+  db.query(sql,(err,rows) => {
+    if(err) console.log(err)
+    console.table(rows);
+  startApp();
+  })
 };
+
+function exit () {
+  inquirer.close();
+}
+
 
 
 
@@ -187,10 +195,7 @@ const startApp = () =>{
         case "View all roles":
            viewRoles();
            break;
-        case "View all employees":
-            viewEmployee();
-            break;
- 
+        
         case "Add new role":
            addRole();
            break;
@@ -206,7 +211,7 @@ const startApp = () =>{
         default:
           //  quit();
            console.log('Bye Bye!!')
-
+           exit();
            break;
         };
      })
