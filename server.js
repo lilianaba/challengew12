@@ -17,7 +17,15 @@ const db = mysql.createConnection(
     },
     console.log(`Connected to the employeeTracker database`)
 );
-
+const db2 = mysql.createConnection(
+  {
+      host:'localhost',
+      user:'root',
+      password:'root',
+      database:'employeeTracker_db'
+  },
+  console.log(`Connected to the employeeTracker database`)
+).promise();
 
 //Program functions
 const viewEmployees = () => {
@@ -40,26 +48,52 @@ const viewEmployees = () => {
   
   };
 
-const viewEmployeesByManager = () => {
+
+
+///////////////////////////////////
+const managers = async () => {
+  const managersSelect = `SELECT concat( first_name,', ',last_name) Manager FROM employee where manager_id is null`;
+  const managersOptions = await db2.query(managersSelect);
+  console.log(managersOptions);
+  return managersOptions[0];
+};  
+
+
+
+
+const viewEmployeesByManager = async () => {
+  inquirer.prompt([
+    {
+       type: 'list',
+       name: 'manager',
+       message:"Select a manager: " ,
+       choices: await managers(),
+     },      
+   ])
+   .then(nextStep => {
     const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
-                 CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName, IFNULL(m.manager,'') Manager
-                 FROM role r, 
-                      department d,
-                      employee e
-                 LEFT JOIN (SELECT concat( first_name,', ',last_name) Manager , id 
-                            FROM employee) m
-                 ON e.manager_id = m.id
-                 WHERE r.department_id = d.id
-                 AND e.role_id = r.id
-                 ORDER BY e.last_name, salary`;
+                 CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName
+                FROM role r, 
+                     department d,
+                     employee e
+                WHERE e.manager_id = (select id from employee where concat( first_name,', ',last_name) = ${nextStep.manager} )
+                AND r.department_id = d.id
+                AND e.role_id = r.id
+                ORDER BY e.last_name`;
+
     db.query(sql,(err,rows) =>{
-      if(err) console.log(err)
-      console.table(rows);
-      startApp();
-    })
-    
+    if(err) console.log(err)
+    console.table(rows);
+    startApp();
+    }) 
+
+     })
     };
 
+  
+ /////////////////////////////////
+    
+ 
 const viewEmployeesByDepartment = () => {
   const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
                 CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName, IFNULL(m.manager,'') Manager
@@ -216,7 +250,7 @@ const startApp = () =>{
          name: 'start',
          message:"What would you like to do?" ,
          choices:['View all employees*',
-                  'View employees by Manager',
+                  'View employees by Manager**',
                   'View employees by Department',
                   'Add employee',
                   'Update employee role',
