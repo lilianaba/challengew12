@@ -409,9 +409,9 @@ const addEmployee = () => {
 
 };
 
-const updateEmployeeManager = () => {
+// const updateEmployeeManager = () => {
 
-};
+// };
 
 const viewRoles = () => {
   const sql =  `select r.id ID,r.title Title, CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName
@@ -549,8 +549,11 @@ const addDepartment = () => {
 };
 
 const budgetByDepartment = () => {
-  const sql =  `select d.id ID,d.name DeptName
-                  from department d`;
+  const sql =  `SELECT d.name Department_Name, CONCAT('$', FORMAT(sum(r.salary), 2)) Total_Budget ,count(e.id) Total_Employees
+                FROM department d,  role r, employee e
+                WHERE d.id = r.department_id
+                AND e.role_id = r.id
+                group by d.id`;
   db.query(sql,(err,rows) => {
     if(err) console.log(err)
     console.table(rows);
@@ -567,16 +570,16 @@ const startApp = () =>{
          type: 'list',
          name: 'start',
          message:"What would you like to do?" ,
-         choices:['View all employees*',
+         choices:['View all employees',
                   'View employees by Manager**',
                   'View employees by Department',
-                  'Add employee*',
+                  'Add employee',
                   // 'Update employee role',
                   // 'Update employee manager',
-                  'Update Employee*',
-                  'View all roles*',
-                  'Add new role*',
-                  'View all departments*',
+                  'Update Employee',
+                  'View all roles',
+                  'Add new role',
+                  'View all departments',
                   'Add new department',
                   'View total budget by department',
                   'Quit']
