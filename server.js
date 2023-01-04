@@ -113,91 +113,299 @@ const viewEmployeesByDepartment = () => {
   })
   
   };
-  
-const addEmployee = () => {
-    return inquirer.prompt([
-          { type: 'input',
-            name: 'name',
-            message: "What is the team intern's name?",
-            validate: mname => {
-              if (mname) {
-                return true;
-              }else{
-                console.log('Please enter a name');
-                return false;
-              }
-            }
-         },
-              
-          {
-            type: 'input',
-            name: 'id',
-            message:"What is the team intern's ID?" ,
-            validate: id => {
-             // (isNaN(parseInt(
-              if (!isNaN(id) === true ) {
-                return true;
-              }else {
-                console.log('Please enter a valid employee ID');
-                return false;
-              }
-            }
-         },
-               
-          {
-            type: 'input',
-            name: 'email',
-            message:"What is the team intern's email?" ,
-            validate: email =>{
-              if (emailValidator.validate((email))) {
-                return true;
-              }else{
-                console.log('Please enter a valid email');
-                return false;
-              }
-            },
-    
-          },
-        
-          {
-            type: 'input',
-            name: 'school',
-            message:"What is the team intern's school?" ,
-          },
-        
-        ])
-          .then((int)=>{
-            //   console.log(response);
-          const intern = new Intern(int.name, int.id,int.email, int.school);
-          const internCard = (`<card class="card col-sm-12 col-md-3 col-lg-3 flex justify-content-center">
-          <div class="cardHeader text-center">
-              <!-- Name and role -->
-              <h2 class="cardName">${intern.name}</h2>
-              <h5 class="cardRole text-white bg-warning">${intern.getRole()}</h5>
-          </div>
-          <div class="cardBody text-center">
-              <ul class="list-group">
-              <!-- Id, Email, OfficeNumber/GitHub/School-->
-                  <li class="list-group-item">ID: ${intern.id}</li>
-                  <li class="list-group-item">Email: <a href="mailto:${intern.getEmail()}" title="mailto:${intern.getEmail()}"> ${intern.getEmail()} </a> </li>
-                  <li class="list-group-item">School: ${intern.school}</li>
-              </ul>
-          </div>
-      </card>`)
-          teamMembers.push(internCard);
-  
-         // validate info collect and store
-          // console.log(teamMembers)
-  
-  
-          teamMembersBuild();
-  
-             
-            });
-  
-  };
 
-const updateEmployeeRole = () => {
+
+const updateFirst =()=>{
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'employee_id',
+      message:"Enter employee ID" ,
+              validate: employee_id => {
+                 if (!isNaN(employee_id) === true ) {
+                 return true;
+                 }else {
+                  console.log('Please enter a valid employee ID');
+                  return false;
+                  }}
+     },
+    { 
+      type: 'input',
+      name: 'newvalue',
+      message:"Enter updated value" ,
+                validate: newvalue => {
+                    if (newvalue) {
+                      return true;
+                    }else{
+                      console.log('Please enter a valid name');
+                      return false;
+                    }
+              },
+      },
+   ]).then(updateStep =>{
+           const sql = `update employee set first_name ='${updateStep.newvalue}' where id = ${updateStep.employee_id}`;
+
+          db.query(sql,(err,rows) =>{
+          if(err) console.log(err)
+          console.table("Employee Updated");
+          startApp();
+          })
+
+      })
+};
+
+const updateLast =()=>{
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'employee_id',
+      message:"Enter employee ID" ,
+              validate: employee_id => {
+                 if (!isNaN(employee_id) === true ) {
+                 return true;
+                 }else {
+                  console.log('Please enter a valid employee ID');
+                  return false;
+                  }}
+     },
+    { 
+      type: 'input',
+      name: 'newvalue',
+      message:"Enter updated value" ,
+                validate: newvalue => {
+                    if (newvalue) {
+                      return true;
+                    }else{
+                      console.log('Please enter a valid name');
+                      return false;
+                    }
+              },
+      },
+   ]).then(updateStep =>{
+           const sql = `update employee set last_name ='${updateStep.newvalue}' where id = ${updateStep.employee_id}`;
+
+          db.query(sql,(err,rows) =>{
+          if(err) console.log(err)
+          console.table("Employee Updated");
+          startApp();
+          })
+
+      })
+};
+
+const updateRoleID =()=>{
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'employee_id',
+      message:"Enter employee ID" ,
+              validate: employee_id => {
+                 if (!isNaN(employee_id) === true ) {
+                 return true;
+                 }else {
+                  console.log('Please enter a valid employee ID');
+                  return false;
+                  }}
+     },
+    { 
+      type: 'input',
+      name: 'newvalue',
+      message:"Enter updated value" ,
+                validate: newvalue => {
+                if (!isNaN(newvalue) === true ) {
+                  return true;
+          
+                }else {
+                  console.log('Please enter a valid employee ID');
+                  return false;
+                }}
+      },
+   ]).then(updateStep =>{
+           const sql = `update employee set role_id = ${updateStep.newvalue} where id = ${updateStep.employee_id}`;
+
+          db.query(sql,(err,rows) =>{
+          if(err) console.log(err)
+          console.table("Employee Updated");
+          startApp();
+          })
+
+      })
+};
+
+const updateManagerID =()=>{
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'employee_id',
+      message:"Enter employee ID" ,
+              validate: employee_id => {
+                 if (!isNaN(employee_id) === true ) {
+                 return true;
+                 }else {
+                  console.log('Please enter a valid employee ID');
+                  return false;
+                  }}
+     },
+    { 
+      type: 'input',
+      name: 'newvalue',
+      message:"Enter updated value" ,
+                validate: newvalue => {
+                if (!isNaN(newvalue) === true ) {
+                  return true;
+          
+                }else {
+                  console.log('Please enter a valid employee ID');
+                  return false;
+                }}
+      },
+   ]).then(updateStep =>{
+           const sql = `update employee set manager_id = ${updateStep.newvalue} where id = ${updateStep.employee_id}`;
+
+          db.query(sql,(err,rows) =>{
+          if(err) console.log(err)
+          console.table("Employee Updated");
+          startApp();
+          })
+
+      })
+};
+  
+
+const updateEmployee = async () => {
+  inquirer.prompt([
+      {
+         type: 'list',
+         name: 'updatefield',
+         message:"Which field do you want to update: " ,
+         choices: ['Fist Name',
+                   'Last Name',
+                   'Role ID',
+                   'Manager ID'],
+       }, 
+       
+     ])
+     .then(nextStep => {
+        switch (nextStep.updatefield) {
+        
+        case "Fist Name":
+          updateFirst();
+          break;
+
+        case "Last Name":
+          updateLast();
+          break;
+        
+        case "Role ID":
+          updateRoleID();
+          break;
+        
+        case "Manager ID":
+          updateManagerID();
+          break;
+          
+          }
+        })
+      };
+  
+  
+
+const addEmployee = () => {
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'first',
+      message:"Enter employee First Name" ,
+                validate: first => {
+                  if (first) {
+                    return true;
+                  }else{
+                    console.log('Please enter a valid name');
+                    return false;
+                  }
+            },
+     },
+     {
+      type: 'input',
+      name: 'last',
+      message:"Enter employee Last Name" ,
+                validate: last => {
+                  if (last) {
+                    return true;
+                  }else{
+                    console.log('Please enter a valid name');
+                    return false;
+                  }
+            },
+     },
+
+
+    { 
+      type: 'list',
+      name: 'roleId',
+      message:"Select Role ID" ,
+      choices:['Sales Manager','Sales Agent','Accountant','Finance Manager'],// add sql select
+      },
+
+      { 
+        type: 'list',
+        name: 'managerId',
+        message:"Select Manager ID" ,
+        choices:['Lola, Garcia','Tomas, Krol','Manager Position'],
+        },
+
+      ]).then(newEmployee =>{
+
+    switch(newEmployee.roleId){
+      case "Sales Manager":
+        newEmployee.roleId =1;
+        break;
+
+      case "Sales Agent":
+        newEmployee.roleId =2;
+        break;
+
+      
+      case "Accountant":
+        newEmployee.roleId =3;
+        break;
+      
+      
+      case "Finance Manager":
+        newEmployee.roleId =4;
+        break;
+
+    }
+    switch(newEmployee.managerId){
+      case "Lola, Garcia":
+        newEmployee.managerId =1;
+        break;
+
+      case "Tomas, Krol":
+        newEmployee.managerId =3;
+        break;
+
+      
+      case "Manager Position":
+        newEmployee.managerId = null;
+        break;
+      
+      
+      // case "Finance Manager":
+      //   roleId =4;
+      //   break;
+
+    }
+      const sql = `INSERT INTO employee (first_name, last_name,role_id, manager_id)
+                    VALUES ("${newEmployee.first}","${newEmployee.last}",${newEmployee.roleId},${newEmployee.managerId})`;
+
+    db.query(sql,(err,rows) =>{
+    if(err) console.log(err)
+    console.table("Employee Created");
+    startApp();
+    })
+
+})
 
 };
 
@@ -216,7 +424,82 @@ const viewRoles = () => {
   })
 };
 
+
 const addRole = () => {
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'title',
+      message:"Enter New Role Title" ,
+                validate: title => {
+                  if (title) {
+                    return true;
+                  }else{
+                    console.log('Please enter a valid title');
+                    return false;
+                  }
+            },
+     },
+     {
+      type: 'input',
+      name: 'salary',
+      message:"Enter Role Salary (only numbers)" ,
+            validate: salary => {
+              if (!isNaN(salary) === true ) {
+                return true;
+        
+              }else {
+                console.log('Please enter a valid salary');
+                return false;
+              }}
+     },
+
+
+    { 
+      type: 'list',
+      name: 'departmentId',
+      message:"Select Department ID" ,
+      choices:['Sales','Accounting','Operations','Support','Development'],// add sql select
+      },
+
+      
+      ]).then(newRole=>{
+
+    switch(newRole.departmentId){
+      case "Sales":
+        newRole.departmentId =1;
+        break;
+
+      case "Accounting":
+        newRole.departmentId =2;
+        break;
+
+      
+      case "Operations":
+        newRole.departmentId =3;
+        break;
+      
+      
+      case "Support":
+        newRole.departmentId =4;
+        break;
+
+      case "Development":
+        newRole.departmentId =5;
+        break;
+
+    }
+    const sql = `INSERT INTO role (title,salary,department_id)
+                 VALUES ("${newRole.title}",${newRole.salary},${newRole.departmentId})`;
+
+    db.query(sql,(err,rows) =>{
+    if(err) console.log(err)
+    console.table("Role Added");
+    startApp();
+    })
+
+})
+
 
 };
 
@@ -228,6 +511,41 @@ const viewDepartments = () => {
     console.table(rows);
   startApp();
   })
+};
+
+
+
+const addDepartment = () => {
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'name',
+      message:"Enter New Department Name" ,
+                validate: name => {
+                  if (name) {
+                    return true;
+                  }else{
+                    console.log('Please enter a valid name');
+                    return false;
+                  }
+            },
+     },
+    
+      
+      ]).then(newDepartment=>{
+
+    const sql = `INSERT INTO department (name)
+    VALUES ("${newDepartment.name}")`;
+
+    db.query(sql,(err,rows) =>{
+    if(err) console.log(err)
+    console.table("Department Added");
+    startApp();
+    })
+
+})
+
+
 };
 
 const budgetByDepartment = () => {
@@ -252,11 +570,12 @@ const startApp = () =>{
          choices:['View all employees*',
                   'View employees by Manager**',
                   'View employees by Department',
-                  'Add employee',
-                  'Update employee role',
-                  'Update employee manager',
+                  'Add employee*',
+                  // 'Update employee role',
+                  // 'Update employee manager',
+                  'Update Employee*',
                   'View all roles*',
-                  'Add new role',
+                  'Add new role*',
                   'View all departments*',
                   'Add new department',
                   'View total budget by department',
@@ -281,13 +600,20 @@ const startApp = () =>{
            addEmployee();
            break;
         
-        case "Update employee role":
-           updateEmployeeRole();
-           break;
 
-        case "Update employee manager":
-           updateEmployeeManager();
+
+// Update first, last, role or manager of an employee
+        // case "Update employee role":
+        //    updateEmployeeRole();
+        //    break;
+
+        // case "Update employee manager":
+        //    updateEmployeeManager();
+        //    break;
+        case "Update Employee":
+           updateEmployee();
            break;
+        
 
         case "View all roles":
            viewRoles();
