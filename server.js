@@ -563,6 +563,45 @@ const budgetByDepartment = () => {
 
 
 
+const deleteData = () => {
+  inquirer.prompt([
+     { 
+      type: 'list',
+      name: 'table',
+      message:"Select which record would you like to delete" ,
+      choices:['Employee','Role','Department'],
+      },
+      { 
+        type: 'input',
+        name: 'id',
+        message:"Enter record ID" ,
+                  validate: id => {
+                  if (!isNaN(id) === true ) {
+                    return true;
+            
+                  }else {
+                    console.log('Please enter a valid ID');
+                    return false;
+                  }}
+        },
+
+
+      ]).then(deleteRecord =>{
+  
+    const sql = `DELETE FROM ${deleteRecord.table} WHERE id = ${deleteRecord.id};`;
+
+    db.query(sql,(err,rows) =>{
+    if(err) console.log(err)
+    console.log(deleteRecord.table, "Deleted");
+    startApp();
+    })
+
+})
+
+};
+
+
+
 // The App
 const startApp = () =>{
     inquirer.prompt([
@@ -582,6 +621,7 @@ const startApp = () =>{
                   'View all departments',
                   'Add new department',
                   'View total budget by department',
+                  'Delete record',
                   'Quit']
        },      
      ])
@@ -638,9 +678,14 @@ const startApp = () =>{
            budgetByDepartment();
            break;
         
+        case "Delete record":
+           deleteData();
+           break;
+      
+    
         default:
-          console.log('Bye Bye!!')
-          process.exit();
+           console.log('Bye Bye!!')
+           process.exit();
         };
      })
  };
