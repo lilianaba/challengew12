@@ -51,35 +51,129 @@ const viewEmployees = () => {
 
 
 ///////////////////////////////////
-const managers = async () => {
-  const managersSelect = `SELECT concat( first_name,', ',last_name) Manager FROM employee where manager_id is null`;
-  const managersOptions = await db2.query(managersSelect);
-  console.log(managersOptions);
-  return managersOptions[0];
-};  
+// const managers = async () => {
+//   const managersSelect = `SELECT concat( first_name,', ',last_name) Manager, id FROM employee where manager_id is null`;
+//   const managersOptions = await db2.query(managersSelect);
+//   console.log(managersOptions[0]);
+//   return managersOptions[0];
+// };  
 
+// findAllEmployees(){
+//   return this.connection.promise().query(
+//     "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id;"
+//   )
+//   };
+
+// function viewEmployeesByManager() {
+//   db.findAllEmployees()
+//     .then(([rows]) => {
+//       let managers = rows;
+//       const managerChoices = managers.map(({ id, first_name, last_name }) => ({
+//         name: `${first_name} ${last_name}`,
+//         value: id
+//       }));
+
+//       prompt([
+//         {
+//           type: "list",
+//           name: "managerId",
+//           message: "Which employee do you want to see direct reports for?",
+//           choices: managerChoices
+//         }
+//       ])
+//  .then(res => db.findAllEmployeesByManager(res.managerId))
+//         .then(([rows]) => {
+//           let employees = rows;
+//           console.log("\n");
+//           if (employees.length === 0) {
+//             console.log("The selected employee has no direct reports");
+//           } else {
+//             console.table(employees);
+//           }
+//         })
+//         .then(() => loadMainPrompts())
+//     });
+//   };
+
+
+// const viewEmployeesByManager = async () => {
+//   // const managers = async () => {
+//     const managersSelect = `SELECT concat( first_name,', ',last_name) Manager, id FROM employee where manager_id is null`;
+//     db2.query(managersSelect).then(([rows])=>{
+//       inquirer.prompt([
+//         {
+//            type: 'list',
+//            name: 'manager',
+//            message:"Select a manager: " ,
+//            choices:rows,
+//          },      
+//        ])
+//     })
+//     // console.log(managersOptions[0]);
+//     // return managersOptions[0];
+//   // };  
+ 
+//    .then(nextStep => {
+//     const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
+//                  CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName
+//                 FROM role r, 
+//                      department d,
+//                      employee e
+//                 WHERE e.manager_id = (select id from employee where concat( first_name,', ',last_name) = ${nextStep.manager} )
+//                 AND r.department_id = d.id
+//                 AND e.role_id = r.id
+//                 ORDER BY e.last_name`;
+
+//     db.query(sql,(err,rows) =>{
+//     if(err) console.log(err)
+//     console.table(rows);
+//     startApp();
+//     }) 
+
+//      })
+//     };
 
 
 
 const viewEmployeesByManager = async () => {
-  inquirer.prompt([
-    {
-       type: 'list',
-       name: 'manager',
-       message:"Select a manager: " ,
-       choices: await managers(),
-     },      
-   ])
+  // const managers = async () => {
+    const managersSelect = `SELECT concat( first_name,', ',last_name) Manager, id ID FROM employee where manager_id is null`;
+    
+    db2.query(managersSelect).then(([rows])=>{
+      console.log("this is the console table:");
+      console.log(rows);
+      // console.table(rows);
+      inquirer.prompt([
+        {
+           type: 'list',
+           name: 'manager',
+           message:"Select a manager: " ,
+           choices:rows,
+         },      
+       ])
+    })
+    // console.log(managersOptions[0]);
+    // return managersOptions[0];
+  // };  
+ 
    .then(nextStep => {
-    const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
-                 CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName
-                FROM role r, 
-                     department d,
-                     employee e
-                WHERE e.manager_id = (select id from employee where concat( first_name,', ',last_name) = ${nextStep.manager} )
-                AND r.department_id = d.id
-                AND e.role_id = r.id
-                ORDER BY e.last_name`;
+    // const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
+    //              CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName
+    //             FROM role r, 
+    //                  department d,
+    //                  employee e
+    //             WHERE e.manager_id = (select id from employee where concat( first_name,', ',last_name) = ${nextStep.manager} )
+    //             AND r.department_id = d.id
+    //             AND e.role_id = r.id
+    //             ORDER BY e.last_name`;
+
+    const sql =  `select e.id ID, e.first_name, e.last_name, d.name DeptName, r.title Role, CONCAT('$', FORMAT(r.salary, 2)) Salary 
+                  from employee e 
+                  left join role 
+                    on r.id = e.role_id 
+                  left join department 
+                    on d.id = r.department_id 
+                  where e.manager_id ${nextStep.manager}`;
 
     db.query(sql,(err,rows) =>{
     if(err) console.log(err)
@@ -89,6 +183,7 @@ const viewEmployeesByManager = async () => {
 
      })
     };
+
 
   
  /////////////////////////////////
@@ -610,7 +705,7 @@ const startApp = () =>{
          name: 'start',
          message:"What would you like to do?" ,
          choices:['View all employees',
-                  'View employees by Manager**',
+                  'View employees by Manager',
                   'View employees by Department',
                   'Add employee',
                   // 'Update employee role',
@@ -692,7 +787,4 @@ const startApp = () =>{
 
  startApp();
  
-
-
-// Delete departments, roles, and employees.
 
