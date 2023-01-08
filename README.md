@@ -58,7 +58,6 @@ SO THAT I can organize and plan my business
 
 [Demo Video](https://drive.google.com/file/d/1OP4koCpzlb2697pBhaqOB-vpSBvcIKfE/preview)
 
-
 ----
 ## Installation
 * npm i -- to install node, 
