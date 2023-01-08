@@ -49,7 +49,15 @@ SO THAT I can organize and plan my business
 * WHEN I choose to add an employee
 * THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
 * WHEN I choose to update an employee role
-*  THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
+* THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
+* Update employee managers.
+* WHEN I am prompted to select an employee by Manager 
+* THEN I am prompted to select a manager to view his/her employees.
+* WHEN I am prompted to select an employee by Department
+* THEN I am prompted to select a department and the program will list all employee by that department
+* WHEN I am prompted to select an Delete
+* THEN I am prompted to select to delete employees, roles or departments and the program will ask the id of the element to delete
+* Then I am prompted to select View total budget by department
     
 ----
 ## Mock-Up
