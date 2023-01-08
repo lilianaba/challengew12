@@ -67,9 +67,7 @@ SO THAT I can organize and plan my business
 * enter password
 * then source db/schema.sql
 * then source db/seed.sql
-* then npm start (to start the program)
-
-* Finally, run node readme.js file to get the questions and provide answers
+* then npm start (to start the program) and follow the instructions answers
 
 -----
 ## Credits
