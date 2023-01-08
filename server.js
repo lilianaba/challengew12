@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
+const e = require('express');
 const PORT = process.env.PORT || 3001;
 const app = express();
 app.use(express.urlencoded({extended:false}));
@@ -48,72 +49,92 @@ const viewEmployees = () => {
   
   };
 
-
-
-///////////////////////////////////
-const managers = async () => {
-  const managersSelect = `SELECT concat( first_name,', ',last_name) Manager FROM employee where manager_id is null`;
-  const managersOptions = await db2.query(managersSelect);
-  console.log(managersOptions);
-  return managersOptions[0];
-};  
-
-
-
-
-const viewEmployeesByManager = async () => {
-  inquirer.prompt([
-    {
-       type: 'list',
-       name: 'manager',
-       message:"Select a manager: " ,
-       choices: await managers(),
-     },      
-   ])
+const viewEmployeesByManager = () => {
+    const managersSelect = `SELECT concat( first_name,', ',last_name) Manager , id ID FROM employee where manager_id is null`;
+    
+    db2.query(managersSelect).then( ([rows])=>{
+      const choices = rows.map(m=>m.Manager);
+      const ids = rows.map(i=>i.ID);
+      // console.log(choices);
+      // console.log(ids);
+      inquirer.prompt([
+        {
+           type: 'list',
+           name: 'manager',
+           message:"Select a manager: " ,
+           choices: choices,
+         },      
+       ])
+    // })
+    
    .then(nextStep => {
-    const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
-                 CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName
-                FROM role r, 
-                     department d,
-                     employee e
-                WHERE e.manager_id = (select id from employee where concat( first_name,', ',last_name) = ${nextStep.manager} )
-                AND r.department_id = d.id
-                AND e.role_id = r.id
-                ORDER BY e.last_name`;
+
+    // console.log(nextStep.manager, choices.indexOf(nextStep.manager));
+    
+    const index =  ids[choices.indexOf(nextStep.manager)];
+    // console.log("console log index: " , index);
+    const sql =  `select e.id ID, e.first_name Fist_Name, e.last_name Last_Name, d.name Dept_Name, r.title Role, CONCAT('$', FORMAT(r.salary, 2)) Salary 
+                  from employee e 
+                  left join role  r
+                    on r.id = e.role_id 
+                  left join department d 
+                    on d.id = r.department_id 
+                  where e.manager_id = ${index}`;
 
     db.query(sql,(err,rows) =>{
     if(err) console.log(err)
+    console.log(nextStep.manager, "employes: ")
     console.table(rows);
+
     startApp();
     }) 
 
      })
+    })
     };
 
-  
- /////////////////////////////////
-    
- 
 const viewEmployeesByDepartment = () => {
-  const sql = `SELECT e.id ID, e.first_name First_Name, e.last_name Last_Name, r.title Role,
-                CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName, IFNULL(m.manager,'') Manager
-                FROM role r, 
-                    department d,
-                    employee e
-                LEFT JOIN (SELECT concat( first_name,', ',last_name) Manager , id 
-                          FROM employee) m
-                ON e.manager_id = m.id
-                WHERE r.department_id = d.id
-                AND e.role_id = r.id
-                ORDER BY e.last_name, salary`;
-  db.query(sql,(err,rows) =>{
-    if(err) console.log(err)
-    console.table(rows);
-    startApp();
-  })
+  const departmentSelect = `SELECT name, id ID FROM department`;
+    
+  db2.query(departmentSelect).then( ([rows])=>{
+    const choices = rows.map(d=>d.name);
+    const ids = rows.map(i=>i.ID);
+    inquirer.prompt([
+      {
+         type: 'list',
+         name: 'department',
+         message:"Select a department: " ,
+         choices: choices,
+       },      
+     ])
+  // })
   
-  };
+ .then(nextStep => {
 
+  // console.log(nextStep.manager, choices.indexOf(nextStep.manager));
+  
+  const index =  ids[choices.indexOf(nextStep.department)];
+  // console.log("console log index: " , index);
+  const sql =  `select e.id ID, e.first_name Fist_Name, e.last_name Last_Name, d.name Dept_Name, r.title Role, CONCAT('$', FORMAT(r.salary, 2)) Salary 
+                from employee e 
+                left join role  r
+                  on r.id = e.role_id 
+                left join department d 
+                  on d.id = r.department_id 
+                where d.id = ${index}`;
+
+  db.query(sql,(err,rows) =>{
+  if(err) console.log(err)
+  console.log(nextStep.department, "employes: ")
+  console.table(rows);
+
+  startApp();
+  }) 
+
+   })
+  })
+
+  };
 
 const updateFirst =()=>{
   inquirer.prompt([
@@ -270,8 +291,7 @@ const updateManagerID =()=>{
 
       })
 };
-  
-
+ 
 const updateEmployee = async () => {
   inquirer.prompt([
       {
@@ -307,10 +327,85 @@ const updateEmployee = async () => {
           }
         })
       };
+
+const addManager = () => {
+  const roleSelect =`SELECT title, id ID FROM role`;
+
+  db2.query(roleSelect).then( ([rowsd])=>{
+    const roles = rowsd.map(r=>r.title);
+    const ids_r= rowsd.map(i=>i.ID);
+
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'first',
+      message:"Enter employee First Name" ,
+                validate: first => {
+                  if (first) {
+                    return true;
+                  }else{
+                    console.log('Please enter a valid name');
+                    return false;
+                  }
+            },
+      },
+      {
+      type: 'input',
+      name: 'last',
+      message:"Enter employee Last Name" ,
+                validate: last => {
+                  if (last) {
+                    return true;
+                  }else{
+                    console.log('Please enter a valid name');
+                    return false;
+                  }
+            },
+      },
+
+
+    { 
+      type: 'list',
+      name: 'roleId',
+      message:"Select Role ID" ,
+      choices:roles,
+      },
+
+      ]).then(newEmployee =>{
+      const index_r =  ids_r[roles.indexOf(newEmployee.roleId)];
+
+      const sql = `INSERT INTO employee (first_name, last_name,role_id, manager_id)
+                    VALUES ("${newEmployee.first}","${newEmployee.last}",${index_r},NULL)`;
+
+    db.query(sql,(err,rows) =>{
+    if(err) console.log(err)
+    console.table("Manager Created");
+    startApp();
+    })
+
+})
+  })
+
+}
+
+const addEmployee = () => {
+  const managersSelect = `SELECT concat( first_name,', ',last_name) Manager , id ID FROM employee where manager_id is null`;
+  const roleSelect =`SELECT title, id ID FROM role`;
+
+  db2.query(roleSelect).then( ([rowsr])=>{
+    // const departments = rows.map(m=>m.Manager);
+    // const ids_d = rows.map(i=>i.ID);
+
+  db2.query(managersSelect).then( ([rowsm])=>{
+    const roles = rowsr.map(r=>r.title);
+    const ids_r = rowsr.map(i=>i.ID);
+    const managers = rowsm.map(m=>m.Manager);
+    const ids_m = rowsm.map(i=>i.ID);
+
+
   
   
 
-const addEmployee = () => {
   inquirer.prompt([
     {
       type: 'input',
@@ -344,60 +439,25 @@ const addEmployee = () => {
       type: 'list',
       name: 'roleId',
       message:"Select Role ID" ,
-      choices:['Sales Manager','Sales Agent','Accountant','Finance Manager'],// add sql select
+      choices:roles,
       },
 
       { 
         type: 'list',
         name: 'managerId',
         message:"Select Manager ID" ,
-        choices:['Lola, Garcia','Tomas, Krol','Manager Position'],
+        choices:managers,
         },
 
       ]).then(newEmployee =>{
 
-    switch(newEmployee.roleId){
-      case "Sales Manager":
-        newEmployee.roleId =1;
-        break;
+    
 
-      case "Sales Agent":
-        newEmployee.roleId =2;
-        break;
+    const index_m =  ids_m[managers.indexOf(newEmployee.managerId)];
+    const index_r =  ids_r[roles.indexOf(newEmployee.roleId)];
 
-      
-      case "Accountant":
-        newEmployee.roleId =3;
-        break;
-      
-      
-      case "Finance Manager":
-        newEmployee.roleId =4;
-        break;
-
-    }
-    switch(newEmployee.managerId){
-      case "Lola, Garcia":
-        newEmployee.managerId =1;
-        break;
-
-      case "Tomas, Krol":
-        newEmployee.managerId =3;
-        break;
-
-      
-      case "Manager Position":
-        newEmployee.managerId = null;
-        break;
-      
-      
-      // case "Finance Manager":
-      //   roleId =4;
-      //   break;
-
-    }
-      const sql = `INSERT INTO employee (first_name, last_name,role_id, manager_id)
-                    VALUES ("${newEmployee.first}","${newEmployee.last}",${newEmployee.roleId},${newEmployee.managerId})`;
+    const sql = `INSERT INTO employee (first_name, last_name,role_id, manager_id)
+                  VALUES ("${newEmployee.first}","${newEmployee.last}",${index_r},${index_m})`;
 
     db.query(sql,(err,rows) =>{
     if(err) console.log(err)
@@ -406,12 +466,10 @@ const addEmployee = () => {
     })
 
 })
+  })
 
+});
 };
-
-// const updateEmployeeManager = () => {
-
-// };
 
 const viewRoles = () => {
   const sql =  `select r.id ID,r.title Title, CONCAT('$', FORMAT(r.salary, 2)) Salary ,d.name DeptName
@@ -424,8 +482,13 @@ const viewRoles = () => {
   })
 };
 
-
 const addRole = () => {
+const departmentSelect =`SELECT name, id ID FROM department`;
+
+db2.query(departmentSelect).then( ([rows])=>{
+  const departments = rows.map(d=>d.name);
+  const ids = rows.map(i=>i.ID);
+
   inquirer.prompt([
     {
       type: 'input',
@@ -459,38 +522,15 @@ const addRole = () => {
       type: 'list',
       name: 'departmentId',
       message:"Select Department ID" ,
-      choices:['Sales','Accounting','Operations','Support','Development'],// add sql select
+      choices:departments,
       },
 
       
       ]).then(newRole=>{
 
-    switch(newRole.departmentId){
-      case "Sales":
-        newRole.departmentId =1;
-        break;
-
-      case "Accounting":
-        newRole.departmentId =2;
-        break;
-
-      
-      case "Operations":
-        newRole.departmentId =3;
-        break;
-      
-      
-      case "Support":
-        newRole.departmentId =4;
-        break;
-
-      case "Development":
-        newRole.departmentId =5;
-        break;
-
-    }
+    const index =  ids[departments.indexOf(newRole.departmentId)];
     const sql = `INSERT INTO role (title,salary,department_id)
-                 VALUES ("${newRole.title}",${newRole.salary},${newRole.departmentId})`;
+                 VALUES ("${newRole.title}",${newRole.salary},${index})`;
 
     db.query(sql,(err,rows) =>{
     if(err) console.log(err)
@@ -501,6 +541,7 @@ const addRole = () => {
 })
 
 
+});
 };
 
 const viewDepartments = () => {
@@ -512,8 +553,6 @@ const viewDepartments = () => {
   startApp();
   })
 };
-
-
 
 const addDepartment = () => {
   inquirer.prompt([
@@ -560,8 +599,6 @@ const budgetByDepartment = () => {
   startApp();
   })
 };
-
-
 
 const deleteData = () => {
   inquirer.prompt([
@@ -610,11 +647,10 @@ const startApp = () =>{
          name: 'start',
          message:"What would you like to do?" ,
          choices:['View all employees',
-                  'View employees by Manager**',
+                  'View employees by Manager',
                   'View employees by Department',
+                  'Add manager',
                   'Add employee',
-                  // 'Update employee role',
-                  // 'Update employee manager',
                   'Update Employee',
                   'View all roles',
                   'Add new role',
@@ -638,21 +674,15 @@ const startApp = () =>{
         case "View employees by Department":
           viewEmployeesByDepartment();
           break;
+
+        case "Add manager":
+          addManager();
+          break;
  
         case "Add employee":
            addEmployee();
            break;
         
-
-
-// Update first, last, role or manager of an employee
-        // case "Update employee role":
-        //    updateEmployeeRole();
-        //    break;
-
-        // case "Update employee manager":
-        //    updateEmployeeManager();
-        //    break;
         case "Update Employee":
            updateEmployee();
            break;
@@ -692,7 +722,4 @@ const startApp = () =>{
 
  startApp();
  
-
-
-// Delete departments, roles, and employees.
 
